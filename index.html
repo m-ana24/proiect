@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aplicatie</title>
+  <style>
+    
+    .header{
+        font-family:'Times New Roman', serif;
+        padding: 30px 16px;
+        background: transparent;
+        color: black;
+        font-size:small;
+        font-weight:100;
+        text-align:justify;
+        border-style:solid;
+        border-color: black;
+        border-bottom-width: thin;
+        border-top-width: 0cm;
+        border-left-width: 0cm;
+        border-right-width: 0cm;
+    }
+
+    .sticky{
+        position: fixed;
+        top: 0;
+        width: 100%
+    }
+
+      img.background {
+        position: absolute;
+        left: 0px;
+        top: 0px;
+        z-index: -1;
+        width: 100%;
+        height: 100%;
+        filter:blur(0px);
+
+      }
+
+      .employee-form {
+        border-style: solid;
+        padding: 10px;
+        margin: auto;
+        width: 40%;
+        }
+
+        .employees-table {
+          border-style: solid;
+          /* margin-bottom: 10px; */
+          /* margin-left: 10px; */
+          padding: 20px;
+          /* width: 50%; */
+          margin:auto;
+          width: 50%;
+          /* border: 3px solid green; */
+          /* padding: 10px; */
+      }
+
+            body > table{
+          width: 70%;
+      }
+
+      table{
+          border-collapse: collapse;
+      }
+      table.list{
+          width:100%;
+      }
+
+      td, th {
+    border: 1px solid #dddddd;
+    text-align: left;
+    padding: 8px;
+}
+tr:nth-child(even),table.list thead>tr {
+    background-color: #dddddd;
+}
+
+input[type=text], input[type=number] {
+    width: 100%;
+    padding: 8px 20px;
+    margin: 8px 0;
+    display: inline-block;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+
+    </style>
+  <script>
+
+   
+   
+    const SERVER = 'http://localhost:8080'
+    let sarcini = []
+
+    
+    const loadSarcini = async () => {
+      try {
+        const response = await fetch(`${SERVER}/sarcini`)
+        if (!response.ok) {
+          throw response
+        }
+        const data = await response.json()
+        return data
+      } catch (error) {
+        console.warn(error)
+      }
+    }
+
+   
+
+
+    const updateSarciniList = async () => {
+      const sarciniList = document.getElementById('sarciniList')
+      sarcini = await loadSarcini()
+      const sarciniRows = sarcini.map(e => `
+        <tr>
+          <td>${e.nume}</td>
+          <td>${e.sarcina}</td>
+          <td>${e.data}</td>
+        </tr>
+      `).join('')
+      const sarciniTable = `
+        <table>
+          <tbody>
+            ${sarciniRows}
+          </tbody>
+        </table>
+      `
+      sarciniList.innerHTML = sarciniTable
+
+      const deleteButtons = document.querySelectorAll('.delete-button')
+      deleteButtons.forEach(button => {
+        button.addEventListener('click', async (e) => {
+          try {
+            const id = e.target.dataset.id
+            await fetch(`${SERVER}/sarcini/${id}`, {
+              method: 'DELETE'
+            })
+            updateSarciniList()
+          } catch (error) {
+            console.warn(error)
+          }
+        })
+      })
+
+
+
+    }
+
+
+    window.onload = async () => {
+      updateSarciniList()
+
+      const numeSarcini = document.getElementById('numeSarcini')
+      const sarcinaSarcini = document.getElementById('sarcinaSarcini')
+      const dataSarcini = document.getElementById('dataSarcini')
+      const addButton = document.getElementById('addButton')
+      
+      addButton.onclick = async () => {
+        try {
+          const payload = {
+            nume: numeSarcini.value,
+            sarcina: sarcinaSarcini.value,
+            data: dataSarcini.value
+          }
+          await fetch(`${SERVER}/sarcini`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(payload)
+          })
+          updateSarciniList()
+        } catch (error) {
+          console.warn(error)
+        }
+      }
+    }
+
+
+  
+
+  </script>
+       
+</head>
+<body >
+    <div class="header" id="myHeader">
+        <h1>Aplicatie tehnologii web</h1>
+    </div>
+<img class="background" src="https://img.freepik.com/free-vector/white-abstract-wallpaper_23-2148830026.jpg?w=2000">
+<br> <br>
+<div class="employee-form">
+  <form onsubmit="event.preventDefault();onFormSubmit();" autocomplete="off">
+      Numele  <br>
+      <select type="text"  id="numeSarcini">
+          <option value="Petre Ana"> Petre Ana </option>
+          <option value="Ionescu Dan "> Ionescu Dan </option>
+          <option value="Popescu Ion "> Popescu Ion </option>
+          <option value="Dumitrescu Teodora"> Dumitrescu Teodora </option>
+        </select>
+      <br> <br>Sarcina <br>
+      <input type="text" id="sarcinaSarcini"/>
+      <br> Data <br>
+      <input type="date" id="dataSarcini"/>
+      <input type="button" value="+" id="addButton" />
+    </form>
+</div>
+  
+<br>
+<div class = "employees-table">
+                <table class="list" id="sarciniList">
+                    <thead>
+                        <tr>
+                            <th>Numele</th>
+                            <th>Task-ul</th>
+                            <th>Data</th>
+                            <td>
+                              <button onclick="deleteTask(event)" data-id="taskId">Delete</button>
+                            </td>
+                        </tr>
+                    </thead>
+                    <tbody>
+
+                    </tbody>
+                </table>
+        </div>
+
+  
+</body>
+</html>
